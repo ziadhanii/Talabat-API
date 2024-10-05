@@ -7,7 +7,7 @@ public class StoreContext(DbContextOptions<StoreContext> options) : DbContext(op
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
+    public DbSet<ProductBrand> Brands { get; set; }
+    public DbSet<ProductCategory> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
-    public DbSet<ProductBrand> ProductBrands { get; set; }
-    public DbSet<ProductCategory> ProductsCategories { get; set; }
 }

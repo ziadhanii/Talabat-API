@@ -22,19 +22,20 @@ public class Program
         });
 
         var app = builder.Build();
-        
+
         using
             var scope = app.Services.CreateScope();
 
         var services = scope.ServiceProvider;
         var dbContext = services.GetRequiredService<StoreContext>();
-        
-        
+
+
         var loggerFactory = services.GetRequiredService<ILoggerFactory>();
 
         try
         {
             await dbContext.Database.MigrateAsync(); // Update Database
+            await StoreContextSeed.SeedAsync(dbContext);
         }
         catch (Exception e)
         {
