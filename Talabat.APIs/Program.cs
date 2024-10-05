@@ -1,7 +1,8 @@
 namespace Talabat.APIs;
+
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +16,33 @@ public class Program
         // Adding DbContext for the database connection
         builder.Services.AddDbContext<StoreContext>(options =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")); // Ensure the name matches the one in appsettings.json
+            options.UseSqlServer(
+                builder.Configuration
+                    .GetConnectionString("DefaultConnection"));
         });
 
         var app = builder.Build();
+        
+        using
+            var scope = app.Services.CreateScope();
+
+        var services = scope.ServiceProvider;
+        var dbContext = services.GetRequiredService<StoreContext>();
+        
+        
+        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+
+        try
+        {
+            await dbContext.Database.MigrateAsync(); // Update Database
+        }
+        catch (Exception e)
+        {
+            var logger = loggerFactory.CreateLogger<Program>();
+            logger.LogError(e, "An error occurred while migrating the database.");
+            throw;
+        }
+
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
