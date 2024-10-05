@@ -1,6 +1,1 @@
-namespace Talabat.Core;
-
-public class GlobalUsings
-{
-    
-}
+global using Talabat.Core.Entities;
