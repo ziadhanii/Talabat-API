@@ -1,3 +1,5 @@
+using Talabat.Repository;
+
 namespace Talabat.APIs;
 
 public class Program
@@ -20,6 +22,7 @@ public class Program
                 builder.Configuration
                     .GetConnectionString("DefaultConnection"));
         });
+        builder.Services.AddScoped(typeof(IGenericReposistory<>), typeof(GenericReposistory<>));
 
         var app = builder.Build();
 
@@ -35,7 +38,7 @@ public class Program
         try
         {
             await dbContext.Database.MigrateAsync(); // Update Database
-            await StoreContextSeed.SeedAsync(dbContext);
+            await StoreContextSeed.SeedAsync(dbContext); // Seed Data
         }
         catch (Exception e)
         {
