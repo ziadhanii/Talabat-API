@@ -1,3 +1,4 @@
+
 namespace Talabat.APIs;
 
 public class Program
@@ -23,6 +24,24 @@ public class Program
         builder.Services.AddScoped(typeof(IGenericReposistory<>), typeof(GenericReposistory<>));
         // builder.Services.AddAutoMapper(M=>M.AddProfile(new MappingProfiles()));
         builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+        builder.Services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.InvalidModelStateResponseFactory = (actionContext) =>
+            {
+                var errors = actionContext.ModelState
+                    .Where(p => p.Value.Errors.Count > 0)
+                    .SelectMany(p => p.Value.Errors)
+                    .Select(x => x.ErrorMessage).ToArray();
+
+                var validationErrorResponse = new ApiValidationErrorResponse
+                {
+                    Errors = errors
+                };
+
+                return new BadRequestObjectResult(validationErrorResponse);
+            };
+        });
+
         var app = builder.Build();
 
         using
@@ -46,7 +65,7 @@ public class Program
             throw;
         }
 
-
+        app.UseMiddleware<ExceptionMiddleware>();
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -54,6 +73,7 @@ public class Program
             app.UseSwaggerUI();
         }
 
+        app.UseStatusCodePagesWithReExecute("/errors/{0}");
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseAuthorization();

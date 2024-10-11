@@ -17,7 +17,7 @@ public class ProductController(IGenericReposistory<Product> productRepo, IMapper
         var product = await productRepo.GetEntityWithSpecAsync(spec);
 
         if (product is null)
-            return NotFound();
+            return NotFound(new ApiResponse(404));
 
         return Ok(mapper.Map<Product, ProductToReturnDto>(product));
     }

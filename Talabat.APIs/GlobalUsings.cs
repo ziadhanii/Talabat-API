@@ -8,3 +8,7 @@ global using AutoMapper;
 global using Talabat.APIs.Helpers;
 global using Talabat.Repository;
 global using Talabat.APIs.DTOs;
+global using Talabat.APIs.Errors;
+global using System.Net;
+global using System.Text.Json;
+global using Talabat.APIs.Middlewares;
