@@ -1,4 +1,3 @@
-
 namespace Talabat.APIs;
 
 public class Program
@@ -6,51 +5,33 @@ public class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        ConfigureServices(builder.Services);
+        var app = builder.Build();
+        await MigrateDatabase(app);
+        ConfigureMiddleware(app);
+        app.Run();
+    }
 
+    private static void ConfigureServices(IServiceCollection services)
+    {
         // Add services to the container.
-        builder.Services.AddControllers();
-
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        services.AddControllers();
+        services.AddSwaggerServices();
 
         // Adding DbContext for the database connection
-        builder.Services.AddDbContext<StoreContext>(options =>
-        {
-            options.UseSqlServer(
-                builder.Configuration
-                    .GetConnectionString("DefaultConnection"));
-        });
-        builder.Services.AddScoped(typeof(IGenericReposistory<>), typeof(GenericReposistory<>));
-        // builder.Services.AddAutoMapper(M=>M.AddProfile(new MappingProfiles()));
-        builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
-        builder.Services.Configure<ApiBehaviorOptions>(options =>
-        {
-            options.InvalidModelStateResponseFactory = (actionContext) =>
-            {
-                var errors = actionContext.ModelState
-                    .Where(p => p.Value.Errors.Count > 0)
-                    .SelectMany(p => p.Value.Errors)
-                    .Select(x => x.ErrorMessage).ToArray();
+        services.AddDbContext<StoreContext>(options =>
+            options.UseSqlServer(services.BuildServiceProvider().GetRequiredService<IConfiguration>()
+                .GetConnectionString("DefaultConnection")));
 
-                var validationErrorResponse = new ApiValidationErrorResponse
-                {
-                    Errors = errors
-                };
+        // Add application services
+        services.AddApplicationServices();
+    }
 
-                return new BadRequestObjectResult(validationErrorResponse);
-            };
-        });
-
-        var app = builder.Build();
-
-        using
-            var scope = app.Services.CreateScope();
-
+    private static async Task MigrateDatabase(WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
         var services = scope.ServiceProvider;
         var dbContext = services.GetRequiredService<StoreContext>();
-
-
         var loggerFactory = services.GetRequiredService<ILoggerFactory>();
 
         try
@@ -64,13 +45,15 @@ public class Program
             logger.LogError(e, "An error occurred while migrating the database.");
             throw;
         }
+    }
 
+    private static void ConfigureMiddleware(WebApplication app)
+    {
         app.UseMiddleware<ExceptionMiddleware>();
-        // Configure the HTTP request pipeline.
+
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerMiddleWare();
         }
 
         app.UseStatusCodePagesWithReExecute("/errors/{0}");
@@ -78,7 +61,5 @@ public class Program
         app.UseStaticFiles();
         app.UseAuthorization();
         app.MapControllers();
-
-        app.Run();
     }
 }

@@ -1,0 +1,33 @@
+namespace Talabat.APIs.Extensions
+{
+    public static class ApplicationServicesExtensions
+    {
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        {
+            services.AddScoped(typeof(IGenericReposistory<>), typeof(GenericReposistory<>)); // Fixed spelling
+
+            services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = actionContext =>
+                {
+                    var errors = actionContext.ModelState
+                        .Where(p => p.Value.Errors.Count > 0)
+                        .SelectMany(p => p.Value.Errors)
+                        .Select(x => x.ErrorMessage)
+                        .ToArray();
+
+                    var validationErrorResponse = new ApiValidationErrorResponse
+                    {
+                        Errors = errors
+                    };
+
+                    return new BadRequestObjectResult(validationErrorResponse);
+                };
+            });
+
+            return services;
+        }
+    }
+}
