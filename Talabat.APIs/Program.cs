@@ -1,5 +1,3 @@
-using Talabat.Repository;
-
 namespace Talabat.APIs;
 
 public class Program
@@ -23,7 +21,8 @@ public class Program
                     .GetConnectionString("DefaultConnection"));
         });
         builder.Services.AddScoped(typeof(IGenericReposistory<>), typeof(GenericReposistory<>));
-
+        // builder.Services.AddAutoMapper(M=>M.AddProfile(new MappingProfiles()));
+        builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
         var app = builder.Build();
 
         using
@@ -56,6 +55,7 @@ public class Program
         }
 
         app.UseHttpsRedirection();
+        app.UseStaticFiles();
         app.UseAuthorization();
         app.MapControllers();
 

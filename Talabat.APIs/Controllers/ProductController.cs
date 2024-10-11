@@ -1,23 +1,24 @@
 ﻿namespace Talabat.APIs.Controllers;
 
-public class ProductController(IGenericReposistory<Product> productRepo) : BaseApiController
+public class ProductController(IGenericReposistory<Product> productRepo, IMapper mapper) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
     {
-        var products = await productRepo.GetAllAsync();
-
-        return Ok(products);
+        var spec = new ProductWithBrandAndCategorySpecifications();
+        var products = await productRepo.GetAllWithSpecAsync(spec);
+        return Ok(mapper.Map<IEnumerable<Product>, IEnumerable<ProductToReturnDto>>(products));
     }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
-        var product = await productRepo.GetAsync(id);
+        var spec = new ProductWithBrandAndCategorySpecifications(id);
+        var product = await productRepo.GetEntityWithSpecAsync(spec);
 
         if (product is null)
             return NotFound();
 
-        return Ok(product);
+        return Ok(mapper.Map<Product, ProductToReturnDto>(product));
     }
 }
