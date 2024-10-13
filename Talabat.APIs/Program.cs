@@ -5,33 +5,32 @@ public class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        ConfigureServices(builder.Services);
-        var app = builder.Build();
-        await MigrateDatabase(app);
-        ConfigureMiddleware(app);
-        app.Run();
-    }
 
-    private static void ConfigureServices(IServiceCollection services)
-    {
         // Add services to the container.
-        services.AddControllers();
-        services.AddSwaggerServices();
+        builder.Services.AddControllers();
+
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
         // Adding DbContext for the database connection
-        services.AddDbContext<StoreContext>(options =>
-            options.UseSqlServer(services.BuildServiceProvider().GetRequiredService<IConfiguration>()
-                .GetConnectionString("DefaultConnection")));
+        builder.Services.AddDbContext<StoreContext>(options =>
+        {
+            options.UseSqlServer(
+                builder.Configuration
+                    .GetConnectionString("DefaultConnection"));
+        });
 
-        // Add application services
-        services.AddApplicationServices();
-    }
+        builder.Services.AddApplicationServices();
+        var app = builder.Build();
 
-    private static async Task MigrateDatabase(WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
+        using
+            var scope = app.Services.CreateScope();
+
         var services = scope.ServiceProvider;
         var dbContext = services.GetRequiredService<StoreContext>();
+
+
         var loggerFactory = services.GetRequiredService<ILoggerFactory>();
 
         try
@@ -45,15 +44,13 @@ public class Program
             logger.LogError(e, "An error occurred while migrating the database.");
             throw;
         }
-    }
 
-    private static void ConfigureMiddleware(WebApplication app)
-    {
         app.UseMiddleware<ExceptionMiddleware>();
-
+        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwaggerMiddleWare();
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
 
         app.UseStatusCodePagesWithReExecute("/errors/{0}");
@@ -61,5 +58,7 @@ public class Program
         app.UseStaticFiles();
         app.UseAuthorization();
         app.MapControllers();
+
+        app.Run();
     }
 }

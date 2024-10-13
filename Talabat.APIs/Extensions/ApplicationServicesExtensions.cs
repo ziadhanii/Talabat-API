@@ -4,7 +4,7 @@ namespace Talabat.APIs.Extensions
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            services.AddScoped(typeof(IGenericReposistory<>), typeof(GenericReposistory<>)); // Fixed spelling
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>)); // Fixed spelling
 
             services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 

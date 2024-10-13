@@ -1,12 +1,10 @@
-using Talabat.Core.Specifications;
-
 namespace Talabat.Repository;
 
-public class GenericReposistory<T> : IGenericReposistory<T> where T : BaseEntity
+public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 {
     private readonly StoreContext _context;
 
-    public GenericReposistory(StoreContext context)
+    public GenericRepository(StoreContext context)
     {
         _context = context;
     }
@@ -16,12 +14,12 @@ public class GenericReposistory<T> : IGenericReposistory<T> where T : BaseEntity
         return await _context.Set<T>().FindAsync(id);
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync()
+    public async Task<IReadOnlyList<T>> GetAllAsync()
     {
         return await _context.Set<T>().ToListAsync();
     }
 
-    public async Task<IEnumerable<T>> GetAllWithSpecAsync(ISpecifications<T> spec)
+    public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecifications<T> spec)
     {
         return await ApplySpecification(spec).ToListAsync();
     }
@@ -31,6 +29,10 @@ public class GenericReposistory<T> : IGenericReposistory<T> where T : BaseEntity
         return await ApplySpecification(spec).SingleOrDefaultAsync();
     }
 
+    public async Task<int> GetCountAsync(ISpecifications<T> spec)
+    {
+        return await ApplySpecification(spec).CountAsync();
+    }
 
     private IQueryable<T> ApplySpecification(ISpecifications<T> spec)
 
