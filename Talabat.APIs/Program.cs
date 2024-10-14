@@ -1,5 +1,3 @@
-using StackExchange.Redis;
-
 namespace Talabat.APIs;
 
 public class Program
@@ -22,27 +20,43 @@ public class Program
                 builder.Configuration
                     .GetConnectionString("DefaultConnection"));
         });
+        
+        builder.Services.AddDbContext<AppIdentityDbContext>(options =>
+        {
+            options.UseSqlServer(
+                builder.Configuration
+                    .GetConnectionString("IdentityConnectionString"));
+        });
 
         builder.Services.AddSingleton<IConnectionMultiplexer>(c =>
         {
             var configurationOptions = new ConfigurationOptions
             {
-                EndPoints = { $"{builder.Configuration["Redis:host"]}:{builder.Configuration["Redis:port"]}" }
+                EndPoints = { $"{builder.Configuration["Redis:Host"]}:{builder.Configuration["Redis:Port"]}" }
             };
 
             return ConnectionMultiplexer.Connect(configurationOptions);
         });
 
-
         builder.Services.AddApplicationServices();
+
+        // Configure Identity
+        builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+        {
+            // options.Password.RequiredUniqueChars = 2;
+            // options.Password.RequireNonAlphanumeric = false;
+            // options.Password.RequireDigit = false;
+        })
+        .AddEntityFrameworkStores<AppIdentityDbContext>()
+        .AddDefaultTokenProviders();
+
         var app = builder.Build();
 
-        using
-            var scope = app.Services.CreateScope();
+        using var scope = app.Services.CreateScope();
 
         var services = scope.ServiceProvider;
         var dbContext = services.GetRequiredService<StoreContext>();
-
+        var identityDbContext = services.GetRequiredService<AppIdentityDbContext>();
 
         var loggerFactory = services.GetRequiredService<ILoggerFactory>();
 
@@ -50,6 +64,10 @@ public class Program
         {
             await dbContext.Database.MigrateAsync(); // Update Database
             await StoreContextSeed.SeedAsync(dbContext); // Seed Data
+
+            await identityDbContext.Database.MigrateAsync(); // Update Database
+            var userManager = services.GetRequiredService<UserManager<AppUser>>();
+            await AppIdentityDbContextSeed.SeedUsersAsync(userManager); // Seed Data
         }
         catch (Exception e)
         {

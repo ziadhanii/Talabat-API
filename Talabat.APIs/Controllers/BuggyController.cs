@@ -1,13 +1,7 @@
 namespace Talabat.APIs.Controllers;
 
-public class BuggyController : BaseApiController
+public class BuggyController(StoreContext storeContext) : BaseApiController
 {
-    private readonly StoreContext _storeContext;
-    public BuggyController(StoreContext storeContext)
-    {
-        _storeContext = storeContext;
-    }
-
     [HttpGet("bad-request")]
     public ActionResult GetBadRequestError() => BadRequest(new ApiResponse(400));
 
@@ -23,7 +17,7 @@ public class BuggyController : BaseApiController
     [HttpGet("server-error")]
     public ActionResult GetServerError()
     {
-        var product = _storeContext.Products.Find(100);
+        var product = storeContext.Products.Find(100);
         var productToReturn = product.ToString();
         return Ok(productToReturn);
     }
