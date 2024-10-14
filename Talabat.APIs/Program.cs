@@ -1,3 +1,5 @@
+using StackExchange.Redis;
+
 namespace Talabat.APIs;
 
 public class Program
@@ -20,6 +22,17 @@ public class Program
                 builder.Configuration
                     .GetConnectionString("DefaultConnection"));
         });
+
+        builder.Services.AddSingleton<IConnectionMultiplexer>(c =>
+        {
+            var configurationOptions = new ConfigurationOptions
+            {
+                EndPoints = { $"{builder.Configuration["Redis:host"]}:{builder.Configuration["Redis:port"]}" }
+            };
+
+            return ConnectionMultiplexer.Connect(configurationOptions);
+        });
+
 
         builder.Services.AddApplicationServices();
         var app = builder.Build();

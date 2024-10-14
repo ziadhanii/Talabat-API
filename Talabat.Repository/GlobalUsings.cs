@@ -6,5 +6,4 @@ global using System.Text.Json;
 global using Talabat.Core.Reposistories.Contract;
 global using Talabat.Repository.Data;
 global using Talabat.Core.Specifications;
-
- 
+global using StackExchange.Redis;

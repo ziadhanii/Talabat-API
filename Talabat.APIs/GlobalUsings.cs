@@ -13,3 +13,4 @@ global using System.Net;
 global using System.Text.Json;
 global using Talabat.APIs.Middlewares;
 global using Talabat.APIs.Extensions;
+global using System.ComponentModel.DataAnnotations;
