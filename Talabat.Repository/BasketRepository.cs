@@ -1,3 +1,5 @@
+using StackExchange.Redis;
+
 namespace Talabat.Repository;
 
 public class BasketRepository : IBasketRepository

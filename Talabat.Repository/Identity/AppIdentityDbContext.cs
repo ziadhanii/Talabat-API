@@ -1,3 +1,5 @@
+using Address = Talabat.Core.Entities.Identity.Address;
+
 namespace Talabat.Repository.Identity;
 
 public class AppIdentityDbContext : IdentityDbContext<AppUser>

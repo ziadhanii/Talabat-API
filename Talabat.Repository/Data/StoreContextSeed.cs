@@ -41,6 +41,19 @@ public static class StoreContextSeed
                     await context.SaveChangesAsync();
                 }
             }
+
+            if (!context.DeliveryMethods.Any())
+            {
+                var deliveryMethodsData =
+                    await File.ReadAllTextAsync("../Talabat.Repository/Data/DataSeed/delivery.json");
+                var deliveryMethods = JsonSerializer.Deserialize<List<DeliveryMethod>>(deliveryMethodsData);
+
+                if (deliveryMethods != null && deliveryMethods.Count > 0)
+                {
+                    await context.DeliveryMethods.AddRangeAsync(deliveryMethods);
+                    await context.SaveChangesAsync();
+                }
+            }
         }
         catch (Exception ex)
         {
