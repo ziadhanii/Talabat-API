@@ -1,4 +1,4 @@
-using Address = Talabat.Core.Entities.Identity.Address;
+using Talabat.Core.Entities.Identity;
 
 namespace Talabat.Repository.Identity;
 

@@ -9,7 +9,10 @@ internal class OrderConfigurations : IEntityTypeConfiguration<Order>
     {
         builder.OwnsOne(o => o.ShippingAddress, shippingAddress => { shippingAddress.WithOwner(); });
 
-
+        builder.HasMany(o => o.Items)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade);
+        
         builder.Property(o => o.Status)
             .HasConversion(
                 o => o.ToString(),

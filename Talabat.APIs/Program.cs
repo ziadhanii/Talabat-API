@@ -1,3 +1,8 @@
+using Microsoft.AspNetCore.Identity;
+using StackExchange.Redis;
+using Talabat.Core.Entities.Identity;
+using Talabat.Repository.Identity;
+
 namespace Talabat.APIs;
 
 public class Program
@@ -20,7 +25,7 @@ public class Program
                 builder.Configuration
                     .GetConnectionString("DefaultConnection"));
         });
-        
+
         builder.Services.AddDbContext<AppIdentityDbContext>(options =>
         {
             options.UseSqlServer(
@@ -40,15 +45,16 @@ public class Program
 
         builder.Services.AddApplicationServices();
 
-        // Configure Identity
-        builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
-        {
-            // options.Password.RequiredUniqueChars = 2;
-            // options.Password.RequireNonAlphanumeric = false;
-            // options.Password.RequireDigit = false;
-        })
-        .AddEntityFrameworkStores<AppIdentityDbContext>()
-        .AddDefaultTokenProviders();
+        builder.Services.AddIdentityServices(builder.Configuration);
+
+        builder.Services.AddCors(options =>
+            options.AddPolicy("MyPolicy", options =>
+            {
+                options.AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .WithOrigins(builder.Configuration["Cors:AllowedOrigins"].Split(","));
+            })
+        );
 
         var app = builder.Build();
 
@@ -77,19 +83,17 @@ public class Program
         }
 
         app.UseMiddleware<ExceptionMiddleware>();
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+
+        app.UseSwagger();
+        app.UseSwaggerUI();
 
         app.UseStatusCodePagesWithReExecute("/errors/{0}");
         app.UseHttpsRedirection();
         app.UseStaticFiles();
-        app.UseAuthorization();
+        app.UseCors("MyPolicy");
         app.MapControllers();
-
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.Run();
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Talabat.Core.Entities.Identity;
 
 namespace Talabat.Repository.Identity;
 

@@ -1,3 +1,5 @@
+using Talabat.Core.Order_Aggregate;
+
 namespace Talabat.Repository.Data.Config;
 
 internal class DeliveryMethodConfigurations : IEntityTypeConfiguration<DeliveryMethod>

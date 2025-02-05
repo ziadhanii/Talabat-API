@@ -11,4 +11,5 @@ public class Address
     public string Street { get; set; }
 
     public string AppUserId { get; set; }
+    public AppUser User { get; set; }
 }

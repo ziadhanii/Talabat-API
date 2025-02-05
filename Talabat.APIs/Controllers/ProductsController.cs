@@ -1,9 +1,7 @@
 ﻿namespace Talabat.APIs.Controllers;
 
 public class ProductsController(
-    IGenericRepository<Product> productRepo,
-    IGenericRepository<ProductBrand> brandRepo,
-    IGenericRepository<ProductCategory> categoryRepo,
+    IProductService productService,
     IMapper mapper
 ) : BaseApiController
 {
@@ -11,13 +9,9 @@ public class ProductsController(
     [HttpGet]
     public async Task<ActionResult<Pagination<Product>>> GetProducts([FromQuery] ProductSpecParams SpecParams)
     {
-        var spec = new ProductWithBrandAndCategorySpecifications(SpecParams);
-        var products = await productRepo.GetAllWithSpecAsync(spec);
-
+        var products = await productService.GetProductsAsync(SpecParams);
+        var count = await productService.GetCountAsync(SpecParams);
         var data = mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
-
-        var countSpec = new ProductWithFilterationForCountSpecifications(SpecParams);
-        var count = await productRepo.GetCountAsync(countSpec);
         return Ok(new Pagination<ProductToReturnDto>(SpecParams.PageIndex, SpecParams.PageSize, count, data));
     }
 
@@ -27,8 +21,7 @@ public class ProductsController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
-        var spec = new ProductWithBrandAndCategorySpecifications(id);
-        var product = await productRepo.GetEntityWithSpecAsync(spec);
+        var product = await productService.GetProductAsync(id);
 
         if (product is null)
             return NotFound(new ApiResponse(404));
@@ -40,14 +33,14 @@ public class ProductsController(
     [HttpGet("brands")]
     public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetBrands()
     {
-        var brands = await brandRepo.GetAllAsync();
+        var brands = await productService.GetBrandsAsync();
         return Ok(brands);
     }
 
     [HttpGet("categories")]
     public async Task<ActionResult<IReadOnlyList<ProductCategory>>> GetCategories()
     {
-        var categories = await categoryRepo.GetAllAsync();
+        var categories = await productService.GetCategoriesAsync();
         return Ok(categories);
     }
 }

@@ -14,7 +14,4 @@ global using System.Text.Json;
 global using Talabat.APIs.Middlewares;
 global using Talabat.APIs.Extensions;
 global using System.ComponentModel.DataAnnotations;
-global using StackExchange.Redis;
-global using Talabat.Repository.Identity;
-global using Microsoft.AspNetCore.Identity;
-global using Talabat.Core.Entities.Identity;
+global using Talabat.Service;
